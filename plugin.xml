@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <id>alto_api</id>
+    <name>
+        <lang name="default">REST API</lang>
+    </name>
+    <author>
+        <lang name="default">Alto CMS Team</lang>
+    </author>
+    <homepage>http://altocms.com</homepage>
+    <version>1.0.0-dev</version>
+    <dirname>alto/api</dirname>
+    <requires>
+        <alto>
+            <version>1.1.14</version>
+        </alto>
+        <system>
+            <php>5.3.0</php>
+        </system>
+    </requires>
+    <description>
+        <lang name="default">REST API</lang>
+    </description>
+</plugin>
