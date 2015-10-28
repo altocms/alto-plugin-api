@@ -68,11 +68,11 @@ class PluginAltoApi_ModuleApiBlogs extends Module {
         );
         $aResult = array(
             'total' => $aBlogs['count'],
-            'collection' => array(),
+            'list' => array(),
         );
         /** @var PluginAltoApi_ModuleApiBlogs_EntityBlog $oBlog */
         foreach($aBlogs['collection'] as $oBlog) {
-            $aResult['collection'][] = $oBlog->getApiData();
+            $aResult['list'][] = $oBlog->getApiData();
         }
 
         return $aResult;
@@ -109,11 +109,11 @@ class PluginAltoApi_ModuleApiBlogs extends Module {
 
         $aResult = array(
             'total' => $aTopics['count'],
-            'collection' => array(),
+            'list' => array(),
         );
         /** @var PluginAltoApi_ModuleApiPosts_EntityPost $oTopic */
         foreach($aTopics['collection'] as $oTopic) {
-            $aResult['collection'][] = $oTopic->getApiData();
+            $aResult['list'][] = $oTopic->getApiData();
         }
 
         return $aResult;

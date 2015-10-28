@@ -51,11 +51,11 @@ class PluginAltoApi_ModuleApiPosts extends Module {
         $aTopics = E::ModuleTopic()->GetTopicsNewAll($iPageNum, $iPageSize);
         $aResult = array(
             'total' => $aTopics['count'],
-            'collection' => array(),
+            'list' => array(),
         );
         /** @var PluginAltoApi_ModuleApiPosts_EntityPost $oTopic */
         foreach($aTopics['collection'] as $oTopic) {
-            $aResult['collection'][] = $oTopic->getApiData();
+            $aResult['list'][] = $oTopic->getApiData();
         }
         return $aResult;
     }
@@ -88,10 +88,10 @@ class PluginAltoApi_ModuleApiPosts extends Module {
 
         $aResult = array(
             'total' => $oTopic->getCountComment(),
-            'collection' => array(),
+            'list' => array(),
         );
         foreach($aComments['comments'] as $oComment) {
-            $aResult['collection'][] = $oComment->getApiData();
+            $aResult['list'][] = $oComment->getApiData();
         }
 
         return $aResult;

@@ -65,11 +65,11 @@ class PluginAltoApi_ModuleApiTalks extends Module {
 
         $aResult = array(
             'total' => $aTalks['count'],
-            'collection' => array(),
+            'list' => array(),
         );
         /** @var PluginAltoApi_ModuleApiTalks_EntityTalk $oTalk */
         foreach($aTalks['collection'] as $oTalk) {
-            $aResult['collection'][] = $oTalk->getApiData();
+            $aResult['list'][] = $oTalk->getApiData();
         }
 
         return $aResult;

@@ -540,6 +540,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
 
     /**
      * GET /posts/:id
+     * GET /posts/:id/comments
      */
     public function EventGetPosts() {
 
@@ -579,6 +580,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
 
     /**
      * GET /blogs/:id
+     * GET /blogs/:id/posts
      */
     public function EventGetBlogs() {
 
@@ -592,8 +594,10 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
         }
         $sCmd = $this->GetParam(1);
         if (empty($sCmd)) {
+            // :id
             $this->aResponseData['blog'] = E::ModuleApiBlogs()->getInfo($iBlogId);
         } elseif ($sCmd == 'posts') {
+            // :id/posts
             $aBlog = E::ModuleApiBlogs()->getInfo($iBlogId);
             $this->aResponseData['blog'] = $aBlog;
             if ($aBlog) {

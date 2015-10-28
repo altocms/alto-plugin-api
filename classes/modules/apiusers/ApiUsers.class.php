@@ -53,11 +53,11 @@ class PluginAltoApi_ModuleApiUsers extends Module {
         $aUsers = E::ModuleUser()->GetUsersByFilter($aFilter, $aOrder, $iPageNum, $iPageSize);
         $aResult = array(
             'total' => $aUsers['count'],
-            'collection' => array(),
+            'list' => array(),
         );
         /** @var PluginAltoApi_ModuleApiUsers_EntityUser $oUser */
         foreach($aUsers['collection'] as $oUser) {
-            $aResult['collection'][] = $oUser->getApiData();
+            $aResult['list'][] = $oUser->getApiData();
         }
 
         return $aResult;
