@@ -16,6 +16,10 @@
  */
 class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
 
+    const ALTO_APP_KEY = 'X-Alto-Application-Key';
+    const ALTO_AUTH_TOKEN = 'X-Alto-Auth-Token';
+    const ALTO_API_CRYPT = 'X-Alto-Api-Crypt';
+
     const MAX_PAGE_SIZE = 25;
 
     protected $aAvailableMethods = array('GET', 'POST', 'PUT', 'DELETE');
@@ -187,7 +191,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
 
         if (is_null($this->aApiApplicationData)) {
             if ($aApplications = C::Get('module.api.applications')) {
-                $sAppKey = $this->_getRequestData('HEADER', 'alto-application-key');
+                $sAppKey = $this->_getRequestData('HEADER', self::ALTO_APP_KEY);
                 if (empty($sAppKey) || empty($aApplications[$sAppKey])) {
                     $this->aApiApplicationData = false;
                 } else {
@@ -209,7 +213,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
 
         $aResult = array();
         if ($sBodyData) {
-            if ($this->_getRequestData('HEADER', 'Content-Transfer-Encoding') == 'x-alto-api-crypt') {
+            if ($this->_getRequestData('HEADER', 'Content-Transfer-Encoding') == self::ALTO_API_CRYPT) {
                 $aApiApplicationData = $this->_getApiApplicationData();
                 if (!empty($aApiApplicationData['secret_key'])) {
                     F::Xxtea_Decode($sBodyData, $aApiApplicationData['secret_key']);
@@ -390,7 +394,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
      */
     protected function _getAuthToken() {
 
-        $sAuthToken = $this->_getRequestData('HEADER', 'Alto-Auth-Token');
+        $sAuthToken = $this->_getRequestData('HEADER', self::ALTO_AUTH_TOKEN);
         if (!$sAuthToken) {
             $sAuthToken = $this->_getRequestData('BODY'. 'auth_token');
         }
