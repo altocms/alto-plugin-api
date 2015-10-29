@@ -216,16 +216,35 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
             if ($this->_getRequestData('HEADER', 'Content-Transfer-Encoding') == self::ALTO_API_CRYPT) {
                 $aApiApplicationData = $this->_getApiApplicationData();
                 if (!empty($aApiApplicationData['secret_key'])) {
-                    F::Xxtea_Decode($sBodyData, $aApiApplicationData['secret_key']);
+                    $sBodyData = F::Xxtea_Decode($sBodyData, $aApiApplicationData['secret_key']);
                 }
             }
             if ($this->_getRequestData('HEADER', 'Content-Type') == 'application/json') {
                 $aResult = json_decode($sBodyData, true, 512, JSON_BIGINT_AS_STRING);
             } else {
-                $aResult = $this->_prepareRequestBody($sBodyData);
+                $aResult = parent::_prepareRequestBody($sBodyData);
             }
         }
         return $aResult;
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function _getRequestParams() {
+
+        $sType = $this->_getRequestMethod();
+        if ($sType == 'POST') {
+            $sContentType = $this->_getRequestData('HEADER', 'Content-Type');
+            if ($sContentType == 'application/x-www-form-urlencoded' || $sContentType == 'multipart/form-data') {
+                $xResult = $this->_getRequestData('POST');
+            } else {
+                $xResult = $this->_getRequestData('BODY');
+            }
+        } else {
+            $xResult = $this->_getRequestData($sType);
+        }
+        return $xResult;
     }
 
     /**
@@ -233,22 +252,14 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
      *
      * @return mixed
      */
-    protected function _getParam($sName) {
+    protected function _getRequestParam($sName) {
 
-        $sType = $this->_getRequestMethod();
-        if ($sType = 'POST') {
-            $sContentType = $this->_getRequestData('HEADER', 'Content-Type');
-            if ($sContentType == 'application/x-www-form-urlencoded' || $sContentType == 'multipart/form-data') {
-                $xResult = $this->_getRequestData('POST', $sName);
-            } else {
-                $xResult = $this->_getRequestData('BODY', $sName);
-            }
-        } else {
-            $xResult = $this->_getRequestData($sType, $sName);
+        $aData = $this->_getRequestParams();
+        if (is_array($aData) && isset($aData[$sName])) {
+            $aData[$sName];
         }
-        return $xResult;
+        return null;
     }
-
 
     protected function _setResponse() {
 
@@ -277,6 +288,8 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
         $this->AddEventUri('GET', '/posts/list', 'EventGetPostsList');
         $this->AddEventUri('GET', '/posts', 'EventGetPosts');
 
+        $this->AddEventUri('POST', '/posts', 'EventPostPosts');
+
         // /api/blogs
         $this->AddEventUri('GET', '/blogs/list', 'EventGetBlogsList');
         $this->AddEventUri('GET', '/blogs', 'EventGetBlogs');
@@ -284,6 +297,13 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
         // /api/talks
         $this->AddEventUri('GET', '/talks/list', 'EventGetTalksList');
         $this->AddEventUri('GET', '/talks', 'EventGetTalks');
+
+        // /api/comments
+        $this->AddEventUri('GET', '/comments/list', 'EventGetCommentsList');
+        $this->AddEventUri('GET', '/comments', 'EventGetComments');
+        $this->AddEventUri('POST', '/comments', 'EventPostComments');
+        $this->AddEventUri('PUT', '/comments', 'EventPutComments');
+        $this->AddEventUri('DELETE', '/comments', 'EventDeleteComments');
     }
 
 
@@ -455,9 +475,9 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
         $this->_setResponse();
 
         // Проверяем передачу логина пароля через POST
-        $sUserLogin = trim($this->_getParam('login'));
-        $sUserEmail = trim($this->_getParam('email'));
-        $sUserPassword = $this->_getParam('password');
+        $sUserLogin = trim($this->_getRequestParam('login'));
+        $sUserEmail = trim($this->_getRequestParam('email'));
+        $sUserPassword = $this->_getRequestParam('password');
 
         if ((!$sUserLogin && !$sUserEmail) || !trim($sUserPassword)) {
             $this->iResponseError = ModuleUser::USER_AUTH_ERROR;
@@ -520,6 +540,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
     public function EventGetUsers() {
 
         $this->_setResponse();
+        $this->_getAuthorizedUser(false);
 
         $iUserId = intval($this->GetParam(0));
         if (!$iUserId) {
@@ -537,6 +558,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
     public function EventGetPostsList() {
 
         $this->_setResponse();
+        $this->_getAuthorizedUser(false);
         list($iPageNum, $iPageSize) = $this->_getPage();
 
         $this->aResponseData['posts'] = E::ModuleApiPosts()->getList($iPageNum, $iPageSize);
@@ -549,6 +571,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
     public function EventGetPosts() {
 
         $this->_setResponse();
+        $this->_getAuthorizedUser(false);
         list($iPageNum, $iPageSize) = $this->_getPage();
 
         $iPostId = intval($this->GetParam(0));
@@ -569,6 +592,13 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
         }
     }
 
+    /**
+     * POST /posts
+     */
+    public function EventPostPosts() {
+
+    }
+
     /* *************** blogs *************** */
 
     /**
@@ -577,6 +607,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
     public function EventGetBlogsList() {
 
         $this->_setResponse();
+        $this->_getAuthorizedUser(false);
         list($iPageNum, $iPageSize) = $this->_getPage();
 
         $this->aResponseData['blogs'] = E::ModuleApiBlogs()->getList($iPageNum, $iPageSize);
@@ -589,6 +620,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
     public function EventGetBlogs() {
 
         $this->_setResponse();
+        $this->_getAuthorizedUser(false);
         list($iPageNum, $iPageSize) = $this->_getPage();
 
         $iBlogId = intval($this->GetParam(0));
@@ -621,7 +653,7 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
         $this->_getAuthorizedUser(true);
         list($iPageNum, $iPageSize) = $this->_getPage();
 
-        $this->aResponseData = E::ModuleApiTalks()->getList($iPageNum, $iPageSize);
+        $this->aResponseData['talks'] = E::ModuleApiTalks()->getList($iPageNum, $iPageSize);
     }
 
     /**
@@ -643,6 +675,73 @@ class PluginAltoApi_ActionApi extends PluginAltoApi_Inherit_ActionApi {
         } else {
             $this->aResponseData['talk'] = $oTalk;
         }
+    }
+
+    /* *************** comments *************** */
+
+    /**
+     * GET /comments/list
+     */
+    public function EventGetCommentsList() {
+
+        $this->_setResponse();
+        $this->_getAuthorizedUser(false);
+        list($iPageNum, $iPageSize) = $this->_getPage();
+
+        $this->aResponseData['comments'] = array('total' => 0, 'list' => array());
+    }
+
+    /**
+     * GET /comments
+     */
+    public function EventGetComments() {
+
+        $this->_setResponse();
+        $this->_getAuthorizedUser(false);
+        list($iPageNum, $iPageSize) = $this->_getPage();
+
+        $this->aResponseData['comments'] = array('total' => 0, 'list' => array());
+    }
+
+    /**
+     * POST /comments
+     */
+    public function EventPostComments() {
+
+        $this->_setResponse();
+        $this->_getAuthorizedUser(false);
+        $aParams = $this->_getRequestParams();
+
+        $this->aResponseData['description'] = 'Comment posted';
+        $this->aResponseData['params'] = $aParams;
+    }
+
+    /**
+     * PUT /comments
+     */
+    public function EventPutComments() {
+
+        $this->_setResponse();
+        $this->_getAuthorizedUser(false);
+        $iCommentId = intval($this->GetParam(0));
+        $aParams = $this->_getRequestParams();
+
+        $this->aResponseData['description'] = 'Comment ' . $iCommentId . ' updated';
+        $this->aResponseData['params'] = $aParams;
+    }
+
+    /**
+     * DELETE /comments
+     */
+    public function EventDeleteComments() {
+
+        $this->_setResponse();
+        $this->_getAuthorizedUser(false);
+        $iCommentId = intval($this->GetParam(0));
+        $aParams = $this->_getRequestParams();
+
+        $this->aResponseData['description'] = 'Comment ' . $iCommentId . ' deleted';
+        $this->aResponseData['params'] = $aParams;
     }
 
     /* *************** ****** *************** */
